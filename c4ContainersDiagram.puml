@@ -1,0 +1,32 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title E-commerce Platform - Container Diagram
+
+Person(customer, "Customer", "Places orders")
+Person(manager, "Manager", "Manages catalog")
+Person(guest, "Guest", "Browses products")
+
+System_Boundary(ecommerce, "E-commerce Platform") {
+
+    Container(webApp, "Web Application", "React + TypeScript", "User interface")
+    Container(api, "Backend API", "Java Spring Boot", "Business logic")
+    ContainerDb(db, "Database", "PostgreSQL", "Application data")
+}
+
+System_Ext(stripe, "Stripe", "Payment provider")
+System_Ext(resend, "Resend", "Email provider")
+
+Rel(guest, webApp, "Browses")
+Rel(customer, webApp, "Uses")
+Rel(manager, webApp, "Manages")
+
+Rel(webApp, api, "Calls", "HTTPS")
+Rel(api, db, "Reads/Writes")
+
+Rel(api, stripe, "Processes payments", "HTTPS")
+Rel(stripe, api, "Sends webhooks", "HTTPS")
+
+Rel(api, resend, "Sends emails", "HTTPS")
+
+@enduml

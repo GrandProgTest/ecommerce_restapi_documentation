@@ -1,0 +1,630 @@
+openapi: 3.0.3
+
+info:
+  title: E-Commerce Nerdery REST API
+  version: 1.0.0
+  description: |
+    REST API for an e-commerce platform following DDD and best practices.
+
+servers:
+  - url: https://api.example.com/api/v1
+    description: Production server
+
+tags:
+  - name: Auth
+  - name: Users
+  - name: Categories
+  - name: Products
+  - name: Cart
+  - name: Orders
+  - name: Payments
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: Register a new client user
+      operationId: createRegistration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignUpRequest"
+      responses:
+        "201":
+          description: User created successfully
+        "400":
+          description: Invalid input
+
+  /auth/signin:
+    post:
+      tags: [Auth]
+      summary: Authenticate user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignInRequest"
+      responses:
+        "200":
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+        "401":
+          description: Invalid credentials
+
+  /auth/password-reset-requests:
+    post:
+      tags: [Auth]
+      summary: Request password reset
+      operationId: createPasswordResetRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Reset email sent
+
+  /auth/password-resets:
+    post:
+      tags: [Auth]
+      summary: Reset password
+      operationId: createPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset successful
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      operationId: getMyProfile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users/{userId}/activation:
+    patch:
+      tags: [Users]
+      summary: Activate or deactivate a user (Manager)
+      security:
+        - bearerAuth: []
+      requestBody:
+       required: true
+       content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UserActivationRequest"
+      responses:
+       "204":
+        description: User activation status updated
+       "404":
+        description: User not found
+    parameters:
+      - $ref: "#/components/parameters/userId"
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List categories
+      operationId: listCategories
+      responses:
+        "200":
+          description: Categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+    post:
+      tags: [Categories]
+      summary: Create category (Manager)
+      security:
+        - bearerAuth: []
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCategoryRequest"
+      responses:
+        "201":
+          description: Category created
+
+  /products:
+    get:
+      tags: [Products]
+      summary: List products (public)
+      operationId: listProducts
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Product list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagedProductResponse"
+
+    post:
+      tags: [Products]
+      summary: Create product (Manager)
+      security:
+        - bearerAuth: []
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "201":
+          description: Product created
+
+  /products/{productId}:
+    get:
+      tags: [Products]
+      summary: Get product details
+      operationId: getProduct
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      responses:
+        "200":
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+    put:
+      tags: [Products]
+      summary: Update product (Manager)
+      security:
+        - bearerAuth: []
+      operationId: updateProduct
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProductRequest"
+      responses:
+        "200":
+          description: Product updated
+    patch:
+      tags: [Products]
+      summary: Activate/Deactivate Product (Manager)
+      security:
+        - bearerAuth: []
+      operationId: patchProduct
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchProductRequest"
+      responses:
+        "200":
+          description: Product Activated/Deactivated
+
+    delete:
+      tags: [Products]
+      summary: Delete product (Manager)
+      security:
+        - bearerAuth: []
+      operationId: deleteProduct
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      responses:
+        "204":
+          description: Product deleted
+
+  /cart:
+    get:
+      tags: [Cart]
+      summary: Get current user's cart
+      operationId: getMyCart
+      responses:
+        "200":
+          description: Cart details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+
+  /cart/items:
+    post:
+      tags: [Cart]
+      summary: Add item to cart
+      operationId: addCartItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddCartItemRequest"
+      responses:
+        "201":
+          description: Item added
+
+  /orders:
+    post:
+      tags: [Orders]
+      summary: Create order (checkout)
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderRequest"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateOrderResponse"
+        "409":
+          description: Insufficient stock or invalid cart
+
+    get:
+      tags: [Orders]
+      summary: List all orders (Manager)
+      security:
+        - bearerAuth: []
+      operationId: listOrders
+      responses:
+        "200":
+          description: Orders list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderGetManager"
+
+  /orders/me:
+    get:
+      tags: [Orders]
+      summary: Get current user's orders
+      operationId: getMyOrders
+      responses:
+        "200":
+          description: User orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+
+
+  /payment-intents/{orderId}:
+    post:
+      tags: [Payments]
+      summary: Create Stripe payment intent for an order
+      operationId: createPaymentIntentForOrder
+      parameters:
+        - $ref: "#/components/parameters/orderId"
+      responses:
+        "200":
+          description: Payment intent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentIntentResponse"
+        "404":
+          description: Order not found
+        "409":
+          description: Order already paid or invalid state
+
+  /webhooks/stripe:
+    post:
+      tags: [Payments]
+      summary: Stripe webhook endpoint
+      operationId: handleStripeWebhook
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Webhook processed
+        "400":
+          description: Invalid webhook signature
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    productId:
+      name: productId
+      in: path
+      required: true
+      schema:
+        type: integer
+
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+
+    orderId:
+      name: orderId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 0
+
+    size:
+      name: size
+      in: query
+      schema:
+        type: integer
+        default: 10
+
+  schemas:
+    SignUpRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    SignInRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+
+    ResetPasswordRequest:
+      type: object
+      required: [token, newPassword, confirmPassword]
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+        confirmPassword:
+          type: string
+
+    AuthToken:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+
+    UserActivationRequest:
+      type: object
+      required: [isActive]
+      properties:
+        isActive:
+          type: boolean
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        role:
+          type: string
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    CreateCategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+        isActive:
+          type: boolean
+
+    CreateProductRequest:
+      type: object
+      required: [name, price, stock, categoryId]
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+        categoryId:
+          type: integer
+
+    UpdateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+
+    PatchProductRequest:
+      type: object
+      required: [isActive]
+      properties:
+        isActive:
+          type: boolean
+
+    PagedProductResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+
+    Cart:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+
+    AddCartItemRequest:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId:
+          type: integer
+        quantity:
+          type: integer
+          minimum: 1
+
+    CreateOrderRequest:
+      type: object
+      required: [addressId]
+      properties:
+        cartId:
+          type: integer
+        addressId:
+          type: integer
+        discountCode:
+          type: string
+          nullable: true
+
+    CreateOrderResponse:
+      type: object
+      properties:
+        orderId:
+          type: integer
+
+    OrderGetManager:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum: [PENDING_PAYMENT, PAID, SHIPPED, CANCELLED]
+        totalAmount:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        cartId:
+          type: integer
+        userId:
+          type: integer
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum: [PENDING_PAYMENT, PAID, SHIPPED, CANCELLED]
+        totalAmount:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        cartId:
+          type: integer
+
+    PaymentIntentResponse:
+      type: object
+      properties:
+        paymentIntentId:
+          type: string
+        clientSecret:
+          type: string
