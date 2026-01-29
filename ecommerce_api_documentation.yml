@@ -23,11 +23,13 @@ security:
   - bearerAuth: []
 
 paths:
-  /auth/signup:
+  /auth/sign-up:
     post:
       tags: [Auth]
-      summary: Register a new client user
-      operationId: createRegistration
+      summary: Sign up a new user
+      description: Create a new user account
+      operationId: signUp
+      security: []
       requestBody:
         required: true
         content:
@@ -37,14 +39,22 @@ paths:
       responses:
         "201":
           description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
         "400":
           description: Invalid input
+        "404":
+          description: User not found
 
-  /auth/signin:
+  /auth/sign-in:
     post:
       tags: [Auth]
-      summary: Authenticate user
-      operationId: loginUser
+      summary: Sign in a user
+      description: Authenticate a user and get a token
+      operationId: signIn
+      security: []
       requestBody:
         required: true
         content:
@@ -53,12 +63,12 @@ paths:
               $ref: "#/components/schemas/SignInRequest"
       responses:
         "200":
-          description: Authentication successful
+          description: User authenticated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthToken"
-        "401":
+                $ref: "#/components/schemas/AuthenticatedUser"
+        "400":
           description: Invalid credentials
 
   /auth/signout:
@@ -124,27 +134,29 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
-       required: true
-       content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/UserActivationRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserActivationRequest"
       responses:
-       "204":
-        description: User activation status updated
-       "404":
-        description: User not found
+        "204":
+          description: User activation status updated
+        "404":
+          description: User not found
     parameters:
       - $ref: "#/components/parameters/userId"
 
   /categories:
     get:
       tags: [Categories]
-      summary: List categories
-      operationId: listCategories
+      summary: Get all categories
+      description: Get all categories. Public endpoint - No authentication required.
+      operationId: getAllCategories
+      security: []
       responses:
         "200":
-          description: Categories list
+          description: Categories retrieved successfully (may be empty list)
           content:
             application/json:
               schema:
@@ -154,10 +166,11 @@ paths:
 
     post:
       tags: [Categories]
-      summary: Create category (Manager)
+      summary: Create a new category
+      description: Create a new category. Only ROLE_MANAGER can create categories.
+      operationId: createCategory
       security:
         - bearerAuth: []
-      operationId: createCategory
       requestBody:
         required: true
         content:
@@ -167,33 +180,87 @@ paths:
       responses:
         "201":
           description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "400":
+          description: Invalid input
+        "403":
+          description: Forbidden - Requires ROLE_MANAGER
+        "404":
+          description: Category not found
+
+  /categories/{categoryId}:
+    get:
+      tags: [Categories]
+      summary: Get category by id
+      description: Get category by id. Public endpoint - No authentication required.
+      operationId: getCategoryById
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/categoryId"
+      responses:
+        "200":
+          description: Category found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "404":
+          description: Category not found
+
+    put:
+      tags: [Categories]
+      summary: Update category
+      description: Update category. Only ROLE_MANAGER can update categories.
+      operationId: updateCategory
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/categoryId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCategoryRequest"
+      responses:
+        "200":
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "403":
+          description: Forbidden - Requires ROLE_MANAGER
+        "404":
+          description: Category not found
 
   /products:
     get:
       tags: [Products]
-      summary: List products (public)
-      operationId: listProducts
-      parameters:
-        - $ref: "#/components/parameters/page"
-        - $ref: "#/components/parameters/size"
-        - name: categoryId
-          in: query
-          schema:
-            type: integer
+      summary: Get all products
+      description: Get all products. Public endpoint - No authentication required.
+      operationId: getAllProducts
+      security: []
       responses:
         "200":
-          description: Product list
+          description: Products retrieved successfully (may be empty list)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PagedProductResponse"
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
 
     post:
       tags: [Products]
-      summary: Create product (Manager)
+      summary: Create a new product
+      description: Create a new product. Only users with ROLE_MANAGER can create products.
+      operationId: createProduct
       security:
         - bearerAuth: []
-      operationId: createProduct
       requestBody:
         required: true
         content:
@@ -202,29 +269,68 @@ paths:
               $ref: "#/components/schemas/CreateProductRequest"
       responses:
         "201":
-          description: Product created
-
-  /products/{productId}:
-    get:
-      tags: [Products]
-      summary: Get product details
-      operationId: getProduct
-      parameters:
-        - $ref: "#/components/parameters/productId"
-      responses:
-        "200":
-          description: Product details
+          description: Product created successfully
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Product"
+        "400":
+          description: Invalid input
+        "403":
+          description: Forbidden - Requires ROLE_MANAGER
+        "404":
+          description: Product not found
+
+  /products/{productId}/activation:
+    patch:
+      tags: [Products]
+      summary: Activate or deactivate a product (Manager)
+      description: Enable or disable a product visibility and availability. Only ROLE_MANAGER can perform this action.
+      operationId: updateProductActivation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchProductRequest"
+      responses:
+        "204":
+          description: Product activation status updated
+        "403":
+          description: Forbidden - Requires ROLE_MANAGER
+        "404":
+          description: Product not found
+
+  /products/{productId}:
+    get:
+      tags: [Products]
+      summary: Get product by id
+      description: Get product details by id. Public endpoint - No authentication required.
+      operationId: getProductById
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      responses:
+        "200":
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Product not found
 
     put:
       tags: [Products]
-      summary: Update product (Manager)
+      summary: Update product
+      description: Update product. Only ROLE_MANAGER can update products.
+      operationId: updateProduct
       security:
         - bearerAuth: []
-      operationId: updateProduct
       parameters:
         - $ref: "#/components/parameters/productId"
       requestBody:
@@ -236,35 +342,61 @@ paths:
       responses:
         "200":
           description: Product updated
-    patch:
-      tags: [Products]
-      summary: Activate/Deactivate Product (Manager)
-      security:
-        - bearerAuth: []
-      operationId: patchProduct
-      parameters:
-        - $ref: "#/components/parameters/productId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PatchProductRequest"
-      responses:
-        "200":
-          description: Product Activated/Deactivated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "403":
+          description: Forbidden - Requires ROLE_MANAGER
+        "404":
+          description: Product not found
 
     delete:
       tags: [Products]
-      summary: Delete product (Manager)
+      summary: Delete product
+      description: Delete product. Only ROLE_MANAGER can delete products.
+      operationId: deleteProduct
       security:
         - bearerAuth: []
-      operationId: deleteProduct
       parameters:
         - $ref: "#/components/parameters/productId"
       responses:
-        "204":
-          description: Product deleted
+        "200":
+          description: Product deleted successfully
+        "403":
+          description: Forbidden - Requires ROLE_MANAGER
+        "404":
+          description: Product not found
+
+  /products/{productId}/category:
+    post:
+      tags: [Products]
+      summary: Assign category to product
+      description: Assign an existing category to a product. Only ROLE_MANAGER can assign categories.
+      operationId: assignCategoryToProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/productId"
+        - name: categoryId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Category assigned to product successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "403":
+          description: Forbidden - Requires ROLE_MANAGER
+        "404":
+          description: Product or category not found
+        "400":
+          description: Category already assigned to product
 
   /products/{productId}/images:
     post:
@@ -633,6 +765,15 @@ components:
       required: true
       schema:
         type: integer
+        format: int64
+
+    categoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
 
     userId:
       name: userId
@@ -640,6 +781,7 @@ components:
       required: true
       schema:
         type: integer
+        format: int64
 
     orderId:
       name: orderId
@@ -666,22 +808,74 @@ components:
   schemas:
     SignUpRequest:
       type: object
-      required: [email, password]
+      required: [username, email, password, role]
       properties:
+        username:
+          type: string
+          description: Username for the new user
+          example: "john_doe"
         email:
           type: string
           format: email
+          description: Email address for the new user
+          example: "john@example.com"
         password:
           type: string
+          description: Password for the new user
+          example: "SecurePass123!"
+        role:
+          type: string
+          description: Role name (ROLE_MANAGER or ROLE_CLIENT)
+          enum: [ROLE_MANAGER, ROLE_CLIENT]
+          example: "ROLE_CLIENT"
 
     SignInRequest:
       type: object
-      required: [email, password]
+      required: [username, password]
       properties:
-        email:
+        username:
           type: string
+          description: Username for authentication
+          example: "john_doe"
         password:
           type: string
+          description: Password for authentication
+          example: "SecurePass123!"
+
+    AuthenticatedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: User ID
+        username:
+          type: string
+          description: Username
+        email:
+          type: string
+          description: User email
+        token:
+          type: string
+          description: JWT token for authentication
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: New username
+        email:
+          type: string
+          format: email
+          description: New email
+        password:
+          type: string
+          description: New password
+        role:
+          type: string
+          enum: [ROLE_MANAGER, ROLE_CLIENT]
+          description: New role
 
     ForgotPasswordRequest:
       type: object
@@ -722,16 +916,18 @@ components:
       properties:
         id:
           type: integer
+          format: int64
+          description: User ID
+        username:
+          type: string
+          description: Username
         email:
           type: string
+          description: User email
         role:
           type: string
-          enum: [MANAGER, CLIENT]
-        isActive:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
+          description: User role (ROLE_MANAGER or ROLE_CLIENT)
+          example: "ROLE_CLIENT"
 
     Address:
       type: object
@@ -778,8 +974,15 @@ components:
       properties:
         id:
           type: integer
+          format: int64
+          description: Category ID
         name:
           type: string
+          description: Category name
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the category was created
 
     CreateCategoryRequest:
       type: object
@@ -787,35 +990,51 @@ components:
       properties:
         name:
           type: string
+          description: Category name
+          example: "Electronics"
+
+    UpdateCategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          description: New category name
+          example: "Electronics & Gadgets"
 
     Product:
       type: object
       properties:
         id:
           type: integer
+          format: int64
+          description: Product ID
         name:
           type: string
+          description: Product name
         description:
           type: string
+          description: Product description
         price:
           type: number
+          format: decimal
+          description: Product price
         stock:
           type: integer
+          description: Available stock quantity
         isActive:
           type: boolean
+          description: Whether the product is active
         categoryIds:
           type: array
           items:
             type: integer
-        images:
-          type: array
-          items:
-            $ref: "#/components/schemas/ProductImage"
-        likesCount:
-          type: integer
+            format: int64
+          description: List of category IDs assigned to the product
         createdByUserId:
           type: integer
           format: int64
+          description: ID of the user who created the product
 
     ProductImage:
       type: object
@@ -836,32 +1055,48 @@ components:
 
     CreateProductRequest:
       type: object
-      required: [name, price, stock, categoryId]
+      required: [name, description, price, stock, categoryIds, createdByUserId]
       properties:
         name:
           type: string
+          description: Product name
         description:
           type: string
+          description: Product description
         price:
           type: number
+          format: decimal
+          description: Product price
         stock:
           type: integer
-        categoryId:
+          description: Available stock quantity
+        categoryIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of category IDs to assign to the product
+        createdByUserId:
           type: integer
+          format: int64
+          description: ID of the user creating the product
 
     UpdateProductRequest:
       type: object
       properties:
         name:
           type: string
+          description: Product name
         description:
           type: string
+          description: Product description
         price:
           type: number
+          format: decimal
+          description: Product price
         stock:
           type: integer
-        categoryId:
-          type: integer
+          description: Available stock quantity
 
     PatchProductRequest:
       type: object
