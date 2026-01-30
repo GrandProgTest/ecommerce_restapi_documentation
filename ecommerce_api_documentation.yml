@@ -71,11 +71,12 @@ paths:
         "400":
           description: Invalid credentials
 
-  /auth/signout:
+  /auth/sign-out:
     post:
       tags: [Auth]
-      summary: Sign out user
-      operationId: signOutUser
+      summary: Sign out user session
+      description: Sign out the current user
+      operationId: signOut
       security:
         - bearerAuth: []
       responses:
@@ -103,6 +104,7 @@ paths:
     post:
       tags: [Auth]
       summary: Reset password
+      description: Reset user password using a valid token. An email notification will be sent to the user upon successful password change.
       operationId: createPasswordReset
       requestBody:
         required: true
@@ -112,7 +114,15 @@ paths:
               $ref: "#/components/schemas/ResetPasswordRequest"
       responses:
         "200":
-          description: Password reset successful
+          description: Password reset successful, confirmation email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password has been reset successfully. A confirmation email has been sent."
 
   /users/me:
     get:
@@ -260,18 +270,26 @@ paths:
     get:
       tags: [Products]
       summary: Get all products
-      description: Get all products. Public endpoint - No authentication required.
+      description: Get all products with optional category filter and pagination support. Public endpoint - No authentication required.
       operationId: getAllProducts
       security: []
+      parameters:
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: Optional category ID to filter products by category
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
       responses:
         "200":
           description: Products retrieved successfully (may be empty list)
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/PagedProductResponse"
 
     post:
       tags: [Products]
@@ -677,12 +695,12 @@ paths:
                 items:
                   $ref: "#/components/schemas/Order"
 
-  /orders/{orderId}/cancel:
+  /orders/{orderId}/cancellation:
     post:
       tags: [Orders]
-      summary: Cancel an order
+      summary: Create order cancellation
       description: Cancel a pending order. Clients can cancel their own orders, managers can cancel any order.
-      operationId: cancelOrder
+      operationId: createOrderCancellation
       security:
         - bearerAuth: []
       parameters:
@@ -792,6 +810,39 @@ paths:
           description: Webhook processed
         "400":
           description: Invalid webhook signature
+
+  /notifications/low-stock:
+    post:
+      tags: [Products]
+      summary: Trigger low stock notifications
+      description: Internal endpoint to send email notifications to users who liked a product when stock reaches 3 or below. This is typically triggered by background jobs monitoring stock levels.
+      operationId: sendLowStockNotifications
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LowStockNotificationRequest"
+      responses:
+        "200":
+          description: Notifications sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notificationsSent:
+                    type: integer
+                    description: Number of notifications sent
+                  productId:
+                    type: integer
+                    format: int64
+        "403":
+          description: Forbidden - Requires ROLE_MANAGER
+        "404":
+          description: Product not found
 
 
 components:
@@ -1323,3 +1374,13 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    LowStockNotificationRequest:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: integer
+          format: int64
+          description: ID of the product with low stock
+      description: Request to send low stock notifications to users who liked the product but haven't purchased it yet
