@@ -270,10 +270,17 @@ paths:
     get:
       tags: [Products]
       summary: Get all products
-      description: Get all products with pagination support. Public endpoint - No authentication required.
+      description: Get all products with optional category filter and pagination support. Public endpoint - No authentication required.
       operationId: getAllProducts
       security: []
       parameters:
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: Optional category ID to filter products by category
         - $ref: "#/components/parameters/page"
         - $ref: "#/components/parameters/size"
       responses:
@@ -310,27 +317,6 @@ paths:
           description: Forbidden - Requires ROLE_MANAGER
         "404":
           description: Product not found
-
-  /categories/{categoryId}/products:
-    get:
-      tags: [Products]
-      summary: Get products by category
-      description: Get all products filtered by category with pagination support. Public endpoint - No authentication required.
-      operationId: getProductsByCategory
-      security: []
-      parameters:
-        - $ref: "#/components/parameters/categoryId"
-        - $ref: "#/components/parameters/page"
-        - $ref: "#/components/parameters/size"
-      responses:
-        "200":
-          description: Products filtered by category
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PagedProductResponse"
-        "404":
-          description: Category not found
 
   /products/{productId}/activation:
     patch:
