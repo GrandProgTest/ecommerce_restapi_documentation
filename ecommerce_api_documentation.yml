@@ -35,14 +35,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SignUpRequest"
+              $ref: "#/components/schemas/SignUpRequestResource"
       responses:
         "201":
           description: User created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserProfile"
+                $ref: "#/components/schemas/UserProfileResource"
         "400":
           description: Invalid input
           content:
@@ -62,14 +62,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SignInRequest"
+              $ref: "#/components/schemas/SignInRequestResource"
       responses:
         "200":
           description: User authenticated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthenticatedUser"
+                $ref: "#/components/schemas/AuthenticatedUserResource"
         "400":
           description: Invalid credentials
           content:
@@ -110,7 +110,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ForgotPasswordRequest"
+              $ref: "#/components/schemas/ForgotPasswordRequestResource"
       responses:
         "200":
           description: Reset email sent (always returns success to prevent email enumeration)
@@ -141,7 +141,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ResetPasswordRequest"
+              $ref: "#/components/schemas/ResetPasswordRequestResource"
       responses:
         "200":
           description: Password reset successful, confirmation email sent
@@ -171,7 +171,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserProfile"
+                $ref: "#/components/schemas/UserProfileResource"
         "401":
           description: Unauthorized - Invalid or missing token
           content:
@@ -189,7 +189,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserActivationRequest"
+              $ref: "#/components/schemas/UserActivationRequestResource"
       responses:
         "204":
           description: User activation status updated
@@ -229,7 +229,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Category"
+                  $ref: "#/components/schemas/CategoryResource"
 
     post:
       tags: [Categories]
@@ -241,14 +241,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateCategoryRequest"
+              $ref: "#/components/schemas/CreateCategoryRequestResource"
       responses:
         "201":
           description: Category created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Category"
+                $ref: "#/components/schemas/CategoryResource"
         "400":
           description: Invalid input
           content:
@@ -283,7 +283,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Category"
+                $ref: "#/components/schemas/CategoryResource"
         "404":
           description: Category not found
           content:
@@ -303,14 +303,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateCategoryRequest"
+              $ref: "#/components/schemas/UpdateCategoryRequestResource"
       responses:
         "200":
           description: Category updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Category"
+                $ref: "#/components/schemas/CategoryResource"
         "400":
           description: Invalid input
           content:
@@ -388,7 +388,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PagedProductResponse"
+                $ref: "#/components/schemas/PagedProductResponseResource"
 
     post:
       tags: [Products]
@@ -400,14 +400,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateProductRequest"
+              $ref: "#/components/schemas/CreateProductRequestResource"
       responses:
         "201":
           description: Product created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/ProductResource"
         "400":
           description: Invalid input
           content:
@@ -440,7 +440,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PatchProductRequest"
+              $ref: "#/components/schemas/PatchProductRequestResource"
       responses:
         "204":
           description: Product activation status updated
@@ -478,7 +478,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/ProductResource"
         "404":
           description: Product not found
           content:
@@ -498,14 +498,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateProductRequest"
+              $ref: "#/components/schemas/UpdateProductRequestResource"
       responses:
         "200":
           description: Product updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/ProductResource"
         "400":
           description: Invalid input
           content:
@@ -580,7 +580,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/ProductResource"
         "400":
           description: Category already assigned to product
           content:
@@ -637,7 +637,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ProductImage"
+                  $ref: "#/components/schemas/ProductImageResource"
         "400":
           description: Invalid file format
           content:
@@ -826,7 +826,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Cart"
+                $ref: "#/components/schemas/CartResource"
         "401":
           description: Unauthorized - Invalid or missing token
           content:
@@ -844,14 +844,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AddCartItemRequest"
+              $ref: "#/components/schemas/AddCartItemRequestResource"
       responses:
         "201":
           description: Item added
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CartItem"
+                $ref: "#/components/schemas/CartItemResource"
         "401":
           description: Unauthorized - Invalid or missing token
           content:
@@ -895,7 +895,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CartItem"
+                $ref: "#/components/schemas/CartItemResource"
         "401":
           description: Unauthorized - Invalid or missing token
           content:
@@ -946,14 +946,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateOrderRequest"
+              $ref: "#/components/schemas/CreateOrderRequestResource"
       responses:
         "201":
           description: Order created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateOrderResponse"
+                $ref: "#/components/schemas/CreateOrderResponseResource"
         "400":
           description: Invalid input
           content:
@@ -985,7 +985,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/OrderGetManager"
+                  $ref: "#/components/schemas/OrderGetManagerResource"
         "401":
           description: Unauthorized - Invalid or missing token
           content:
@@ -1012,7 +1012,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Order"
+                  $ref: "#/components/schemas/OrderResource"
         "401":
           description: Unauthorized - Invalid or missing token
           content:
@@ -1034,7 +1034,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Order"
+                $ref: "#/components/schemas/OrderResource"
         "401":
           description: Unauthorized - Invalid or missing token
           content:
@@ -1073,7 +1073,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Address"
+                  $ref: "#/components/schemas/AddressResource"
         "401":
           description: Unauthorized - Invalid or missing token
           content:
@@ -1089,14 +1089,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateAddressRequest"
+              $ref: "#/components/schemas/CreateAddressRequestResource"
       responses:
         "201":
           description: Address created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Address"
+                $ref: "#/components/schemas/AddressResource"
         "400":
           description: Invalid input
           content:
@@ -1152,7 +1152,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PaymentIntentResponse"
+                $ref: "#/components/schemas/PaymentIntentResponseResource"
         "401":
           description: Unauthorized - Invalid or missing token
           content:
@@ -1213,7 +1213,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LowStockNotificationRequest"
+              $ref: "#/components/schemas/LowStockNotificationRequestResource"
       responses:
         "200":
           description: Notifications sent successfully
@@ -1348,7 +1348,7 @@ components:
           type: string
           description: Request path
 
-    SignUpRequest:
+    SignUpRequestResource:
       type: object
       required: [username, email, password, role]
       properties:
@@ -1371,7 +1371,7 @@ components:
           enum: [ROLE_MANAGER, ROLE_CLIENT]
           example: "ROLE_CLIENT"
 
-    SignInRequest:
+    SignInRequestResource:
       type: object
       required: [username, password]
       properties:
@@ -1384,7 +1384,7 @@ components:
           description: Password for authentication
           example: "SecurePass123!"
 
-    AuthenticatedUser:
+    AuthenticatedUserResource:
       type: object
       properties:
         id:
@@ -1401,7 +1401,7 @@ components:
           type: string
           description: JWT token for authentication
 
-    ForgotPasswordRequest:
+    ForgotPasswordRequestResource:
       type: object
       required: [email]
       properties:
@@ -1410,7 +1410,7 @@ components:
           format: email
           description: Email address for password reset
 
-    ResetPasswordRequest:
+    ResetPasswordRequestResource:
       type: object
       required: [token, newPassword, confirmPassword]
       properties:
@@ -1424,7 +1424,7 @@ components:
           type: string
           description: Confirmation of the new password (must match newPassword)
 
-    UserActivationRequest:
+    UserActivationRequestResource:
       type: object
       required: [isActive]
       properties:
@@ -1432,7 +1432,7 @@ components:
           type: boolean
           description: Whether the user should be active (true) or deactivated (false)
 
-    UserProfile:
+    UserProfileResource:
       type: object
       properties:
         id:
@@ -1450,7 +1450,7 @@ components:
           description: User role (ROLE_MANAGER or ROLE_CLIENT)
           example: "ROLE_CLIENT"
 
-    Address:
+    AddressResource:
       type: object
       properties:
         id:
@@ -1482,7 +1482,7 @@ components:
           format: date-time
           description: Timestamp when the address was created
 
-    CreateAddressRequest:
+    CreateAddressRequestResource:
       type: object
       required: [street, city, country, postalCode]
       properties:
@@ -1507,7 +1507,7 @@ components:
           description: Whether this should be the user's default address
           default: false
 
-    Category:
+    CategoryResource:
       type: object
       properties:
         id:
@@ -1522,7 +1522,7 @@ components:
           format: date-time
           description: Timestamp when the category was created
 
-    CreateCategoryRequest:
+    CreateCategoryRequestResource:
       type: object
       required: [name]
       properties:
@@ -1531,7 +1531,7 @@ components:
           description: Category name
           example: "Electronics"
 
-    UpdateCategoryRequest:
+    UpdateCategoryRequestResource:
       type: object
       required: [name]
       properties:
@@ -1540,7 +1540,7 @@ components:
           description: New category name
           example: "Electronics & Gadgets"
 
-    Product:
+    ProductResource:
       type: object
       properties:
         id:
@@ -1575,7 +1575,7 @@ components:
           format: int64
           description: ID of the user who created the product
 
-    ProductImage:
+    ProductImageResource:
       type: object
       properties:
         id:
@@ -1597,7 +1597,7 @@ components:
           format: date-time
           description: Timestamp when the image was uploaded
 
-    CreateProductRequest:
+    CreateProductRequestResource:
       type: object
       required: [name, description, price, stock, categoryIds]
       properties:
@@ -1627,7 +1627,7 @@ components:
           description: List of category IDs to assign to the product
           minItems: 1
 
-    UpdateProductRequest:
+    UpdateProductRequestResource:
       type: object
       properties:
         name:
@@ -1649,7 +1649,7 @@ components:
           minimum: 0
           example: 50
 
-    PatchProductRequest:
+    PatchProductRequestResource:
       type: object
       required: [isActive]
       properties:
@@ -1657,13 +1657,13 @@ components:
           type: boolean
           description: Whether the product should be active (true) or deactivated (false)
 
-    PagedProductResponse:
+    PagedProductResponseResource:
       type: object
       properties:
         content:
           type: array
           items:
-            $ref: "#/components/schemas/Product"
+            $ref: "#/components/schemas/ProductResource"
           description: List of products in the current page
         totalElements:
           type: integer
@@ -1672,7 +1672,7 @@ components:
           type: integer
           description: Total number of pages available
 
-    Cart:
+    CartResource:
       type: object
       properties:
         id:
@@ -1690,7 +1690,7 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/CartItem"
+            $ref: "#/components/schemas/CartItemResource"
           description: List of items in the cart
         totalAmount:
           type: number
@@ -1705,7 +1705,7 @@ components:
           nullable: true
           description: Timestamp when the cart was checked out (null if not checked out)
 
-    CartItem:
+    CartItemResource:
       type: object
       properties:
         id:
@@ -1733,7 +1733,7 @@ components:
         subtotal:
           type: number
           description: Total price for this item (unitPrice * quantity)
-    AddCartItemRequest:
+    AddCartItemRequestResource:
       type: object
       required: [productId, quantity]
       properties:
@@ -1746,7 +1746,7 @@ components:
           minimum: 1
           description: Quantity of the product to add
 
-    CreateOrderRequest:
+    CreateOrderRequestResource:
       type: object
       required: [addressId]
       properties:
@@ -1759,7 +1759,7 @@ components:
           nullable: true
           description: Optional discount code to apply to the order
 
-    CreateOrderResponse:
+    CreateOrderResponseResource:
       type: object
       properties:
         orderId:
@@ -1767,7 +1767,7 @@ components:
           format: int64
           description: ID of the created order
 
-    OrderGetManager:
+    OrderGetManagerResource:
       type: object
       properties:
         id:
@@ -1809,7 +1809,7 @@ components:
           nullable: true
           description: ID of the applied discount (null if no discount applied)
 
-    Order:
+    OrderResource:
       type: object
       properties:
         id:
@@ -1844,9 +1844,9 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/OrderItem"
+            $ref: "#/components/schemas/OrderItemResource"
           description: List of items in the order
-    OrderItem:
+    OrderItemResource:
       type: object
       properties:
         id:
@@ -1874,7 +1874,7 @@ components:
           type: number
           description: Total price for this item (priceAtPurchase * quantity)
 
-    PaymentIntentResponse:
+    PaymentIntentResponseResource:
       type: object
       properties:
         paymentIntentId:
@@ -1884,7 +1884,7 @@ components:
           type: string
           description: Client secret for completing the payment on the client side
 
-    Payment:
+    PaymentResource:
       type: object
       properties:
         id:
@@ -1910,7 +1910,7 @@ components:
           format: date-time
           description: Timestamp when the payment was created
 
-    LowStockNotificationRequest:
+    LowStockNotificationRequestResource:
       type: object
       required: [productId]
       properties:
