@@ -161,11 +161,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /users/me:
+  /users/{userId}:
     get:
       tags: [Users]
-      summary: Get current user profile
-      operationId: getMyProfile
+      summary: Get user profile
+      operationId: getUserProfile
+      parameters:
+        - $ref: "#/components/parameters/userId"
       responses:
         "200":
           description: User profile
@@ -474,42 +476,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /products/{productId}/activation:
-    patch:
-      tags: [Products]
-      summary: Activate or deactivate a product (Manager)
-      description: Enable or disable a product visibility and availability. Only ROLE_MANAGER can perform this action.
-      operationId: updateProductActivation
-      parameters:
-        - $ref: "#/components/parameters/productId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PatchProductRequestResource"
-      responses:
-        "204":
-          description: Product activation status updated
-        "401":
-          description: Unauthorized - Invalid or missing token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Forbidden - Requires ROLE_MANAGER
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Product not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
   /products/{productId}:
     get:
       tags: [Products]
@@ -602,86 +568,6 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Product not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /products/{productId}/category:
-    post:
-      tags: [Products]
-      summary: Assign category to product
-      description: Assign an existing category to a product. Only ROLE_MANAGER can assign categories.
-      operationId: assignCategoryToProduct
-      parameters:
-        - $ref: "#/components/parameters/productId"
-        - name: categoryId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "200":
-          description: Category assigned to product successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProductResource"
-        "400":
-          description: Category already assigned to product
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Unauthorized - Invalid or missing token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Forbidden - Requires ROLE_MANAGER
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Product or category not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-    delete:
-      tags: [Products]
-      summary: Remove category from product
-      description: Remove a category assignment from a product (many-to-many relationship). Only ROLE_MANAGER can remove category assignments.
-      operationId: removeCategoryFromProduct
-      parameters:
-        - $ref: "#/components/parameters/productId"
-        - name: categoryId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "204":
-          description: Category removed from product successfully
-        "401":
-          description: Unauthorized - Invalid or missing token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Forbidden - Requires ROLE_MANAGER
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Product, category, or assignment not found
           content:
             application/json:
               schema:
@@ -896,11 +782,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /cart:
+  /cart/{userId}:
     get:
       tags: [Cart]
-      summary: Get current user's cart
-      operationId: getMyCart
+      summary: Get user's cart
+      operationId: getUserCart
+      parameters:
+        - $ref: "#/components/parameters/userId"
       responses:
         "200":
           description: Cart details
@@ -915,11 +803,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /cart/items:
+  /cart/{userId}/items:
     post:
       tags: [Cart]
       summary: Add item to cart
       operationId: addCartItem
+      parameters:
+        - $ref: "#/components/parameters/userId"
       requestBody:
         required: true
         content:
@@ -952,12 +842,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /cart/items/{cartItemId}:
+  /cart/{userId}/items/{cartItemId}:
     put:
       tags: [Cart]
       summary: Update cart item quantity
       operationId: updateCartItem
       parameters:
+        - $ref: "#/components/parameters/userId"
         - $ref: "#/components/parameters/cartItemId"
       requestBody:
         required: true
@@ -1000,6 +891,7 @@ paths:
       summary: Remove item from cart
       operationId: removeCartItem
       parameters:
+        - $ref: "#/components/parameters/userId"
         - $ref: "#/components/parameters/cartItemId"
       responses:
         "204":
@@ -1083,44 +975,10 @@ paths:
   /users/{userId}/orders:
     get:
       tags: [Orders]
-      summary: Get orders by user ID (Manager)
-      description: Retrieve all orders for a specific user. Only ROLE_MANAGER can access orders for other users.
-      operationId: getOrdersByUserId
+      summary: Get user's orders
+      operationId: getUserOrders
       parameters:
         - $ref: "#/components/parameters/userId"
-      responses:
-        "200":
-          description: User orders retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/OrderResource"
-        "401":
-          description: Unauthorized - Invalid or missing token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Forbidden - Requires ROLE_MANAGER
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /orders/me:
-    get:
-      tags: [Orders]
-      summary: Get current user's orders
-      operationId: getMyOrders
       responses:
         "200":
           description: User orders
@@ -1177,11 +1035,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /users/me/addresses:
+  /users/{userId}/addresses:
     get:
       tags: [Users]
-      summary: Get current user's addresses
-      operationId: getMyAddresses
+      summary: Get user's addresses
+      operationId: getUserAddresses
+      parameters:
+        - $ref: "#/components/parameters/userId"
       responses:
         "200":
           description: User addresses
@@ -1199,8 +1059,10 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
     post:
       tags: [Users]
-      summary: Create a new address for current user
+      summary: Create a new address for user
       operationId: createAddress
+      parameters:
+        - $ref: "#/components/parameters/userId"
       requestBody:
         required: true
         content:
@@ -1227,12 +1089,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /users/me/addresses/{addressId}:
+  /users/{userId}/addresses/{addressId}:
     delete:
       tags: [Users]
-      summary: Delete current user's address
+      summary: Delete user's address
       operationId: deleteAddress
       parameters:
+        - $ref: "#/components/parameters/userId"
         - $ref: "#/components/parameters/addressId"
       responses:
         "204":
@@ -1319,13 +1182,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /users/me/notifications:
+  /users/{userId}/notifications:
     get:
       tags: [Notifications]
-      summary: Get current user's notifications
+      summary: Get user's notifications
       description: Retrieve all notifications for the authenticated user, including low stock alerts and other system notifications.
-      operationId: getMyNotifications
+      operationId: getUserNotifications
       parameters:
+        - $ref: "#/components/parameters/userId"
         - name: unreadOnly
           in: query
           required: false
@@ -1805,14 +1669,15 @@ components:
           description: Available stock quantity
           minimum: 0
           example: 50
-
-    PatchProductRequestResource:
-      type: object
-      required: [isActive]
-      properties:
         isActive:
           type: boolean
-          description: Whether the product should be active (true) or deactivated (false)
+          description: Whether the product is active (visible and available for purchase)
+        categoryIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of category IDs to assign to the product
 
     PagedProductResponseResource:
       type: object
