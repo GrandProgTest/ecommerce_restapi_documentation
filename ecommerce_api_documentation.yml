@@ -972,7 +972,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /users/{userId}/orders:
+  /orders/{userId}:
     get:
       tags: [Orders]
       summary: Get user's orders
