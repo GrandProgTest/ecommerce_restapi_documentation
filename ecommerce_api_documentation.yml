@@ -18,6 +18,7 @@ tags:
   - name: Cart
   - name: Orders
   - name: Payments
+  - name: Notifications
 
 security:
   - bearerAuth: []
@@ -160,11 +161,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /users/me:
+  /users/{userId}:
     get:
       tags: [Users]
-      summary: Get current user profile
-      operationId: getMyProfile
+      summary: Get user profile
+      operationId: getUserProfile
+      parameters:
+        - $ref: "#/components/parameters/userId"
       responses:
         "200":
           description: User profile
@@ -213,6 +216,52 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
     parameters:
       - $ref: "#/components/parameters/userId"
+
+  /users/{userId}/role:
+    patch:
+      tags: [Users]
+      summary: Update user role (Manager)
+      description: Update a user's role. Only ROLE_MANAGER can change user roles.
+      operationId: updateUserRole
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRoleRequestResource"
+      responses:
+        "200":
+          description: User role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfileResource"
+        "400":
+          description: Invalid role provided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden - Requires ROLE_MANAGER
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /categories:
     get:
@@ -427,42 +476,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /products/{productId}/activation:
-    patch:
-      tags: [Products]
-      summary: Activate or deactivate a product (Manager)
-      description: Enable or disable a product visibility and availability. Only ROLE_MANAGER can perform this action.
-      operationId: updateProductActivation
-      parameters:
-        - $ref: "#/components/parameters/productId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PatchProductRequestResource"
-      responses:
-        "204":
-          description: Product activation status updated
-        "401":
-          description: Unauthorized - Invalid or missing token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Forbidden - Requires ROLE_MANAGER
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Product not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
   /products/{productId}:
     get:
       tags: [Products]
@@ -555,52 +568,6 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Product not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /products/{productId}/category:
-    post:
-      tags: [Products]
-      summary: Assign category to product
-      description: Assign an existing category to a product. Only ROLE_MANAGER can assign categories.
-      operationId: assignCategoryToProduct
-      parameters:
-        - $ref: "#/components/parameters/productId"
-        - name: categoryId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "200":
-          description: Category assigned to product successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProductResource"
-        "400":
-          description: Category already assigned to product
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Unauthorized - Invalid or missing token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Forbidden - Requires ROLE_MANAGER
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Product or category not found
           content:
             application/json:
               schema:
@@ -815,11 +782,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /cart:
+  /cart/{userId}:
     get:
       tags: [Cart]
-      summary: Get current user's cart
-      operationId: getMyCart
+      summary: Get user's cart
+      operationId: getUserCart
+      parameters:
+        - $ref: "#/components/parameters/userId"
       responses:
         "200":
           description: Cart details
@@ -834,11 +803,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /cart/items:
+  /cart/{userId}/items:
     post:
       tags: [Cart]
       summary: Add item to cart
       operationId: addCartItem
+      parameters:
+        - $ref: "#/components/parameters/userId"
       requestBody:
         required: true
         content:
@@ -871,12 +842,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /cart/items/{cartItemId}:
+  /cart/{userId}/items/{cartItemId}:
     put:
       tags: [Cart]
       summary: Update cart item quantity
       operationId: updateCartItem
       parameters:
+        - $ref: "#/components/parameters/userId"
         - $ref: "#/components/parameters/cartItemId"
       requestBody:
         required: true
@@ -919,6 +891,7 @@ paths:
       summary: Remove item from cart
       operationId: removeCartItem
       parameters:
+        - $ref: "#/components/parameters/userId"
         - $ref: "#/components/parameters/cartItemId"
       responses:
         "204":
@@ -999,47 +972,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /users/{userId}/orders:
+  /orders/{userId}:
     get:
       tags: [Orders]
-      summary: Get orders by user ID (Manager)
-      description: Retrieve all orders for a specific user. Only ROLE_MANAGER can access orders for other users.
-      operationId: getOrdersByUserId
+      summary: Get user's orders
+      operationId: getUserOrders
       parameters:
         - $ref: "#/components/parameters/userId"
-      responses:
-        "200":
-          description: User orders retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/OrderResource"
-        "401":
-          description: Unauthorized - Invalid or missing token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: Forbidden - Requires ROLE_MANAGER
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /orders/me:
-    get:
-      tags: [Orders]
-      summary: Get current user's orders
-      operationId: getMyOrders
       responses:
         "200":
           description: User orders
@@ -1096,11 +1035,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /addresses:
+  /users/{userId}/addresses:
     get:
       tags: [Users]
-      summary: Get current user's addresses
-      operationId: getMyAddresses
+      summary: Get user's addresses
+      operationId: getUserAddresses
+      parameters:
+        - $ref: "#/components/parameters/userId"
       responses:
         "200":
           description: User addresses
@@ -1118,8 +1059,10 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
     post:
       tags: [Users]
-      summary: Create a new address
+      summary: Create a new address for user
       operationId: createAddress
+      parameters:
+        - $ref: "#/components/parameters/userId"
       requestBody:
         required: true
         content:
@@ -1146,12 +1089,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /addresses/{addressId}:
+  /users/{userId}/addresses/{addressId}:
     delete:
       tags: [Users]
-      summary: Delete an address
+      summary: Delete user's address
       operationId: deleteAddress
       parameters:
+        - $ref: "#/components/parameters/userId"
         - $ref: "#/components/parameters/addressId"
       responses:
         "204":
@@ -1233,6 +1177,37 @@ paths:
                     example: "success"
         "400":
           description: Invalid webhook signature
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{userId}/notifications:
+    get:
+      tags: [Notifications]
+      summary: Get user's notifications
+      description: Retrieve all notifications for the authenticated user, including low stock alerts and other system notifications.
+      operationId: getUserNotifications
+      parameters:
+        - $ref: "#/components/parameters/userId"
+        - name: unreadOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Filter to show only unread notifications
+      responses:
+        "200":
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationResource"
+        "401":
+          description: Unauthorized - Invalid or missing token
           content:
             application/json:
               schema:
@@ -1468,6 +1443,16 @@ components:
           type: boolean
           description: Whether the user should be active (true) or deactivated (false)
 
+    UpdateUserRoleRequestResource:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          description: New role for the user
+          enum: [ROLE_MANAGER, ROLE_CLIENT]
+          example: "ROLE_MANAGER"
+
     UserProfileResource:
       type: object
       properties:
@@ -1684,14 +1669,15 @@ components:
           description: Available stock quantity
           minimum: 0
           example: 50
-
-    PatchProductRequestResource:
-      type: object
-      required: [isActive]
-      properties:
         isActive:
           type: boolean
-          description: Whether the product should be active (true) or deactivated (false)
+          description: Whether the product is active (visible and available for purchase)
+        categoryIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of category IDs to assign to the product
 
     PagedProductResponseResource:
       type: object
@@ -1955,3 +1941,45 @@ components:
           format: int64
           description: ID of the product with low stock
       description: Request to send low stock notifications to users who liked the product but haven't purchased it yet
+
+    NotificationResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Notification ID
+        userId:
+          type: integer
+          format: int64
+          description: ID of the user who received this notification
+        type:
+          type: string
+          enum: [LOW_STOCK, ORDER_STATUS, GENERAL]
+          description: Type of notification
+        title:
+          type: string
+          description: Notification title
+          example: "Product Back in Stock"
+        message:
+          type: string
+          description: Notification message content
+          example: "The product 'Wireless Mouse' you liked is back in stock!"
+        relatedEntityId:
+          type: integer
+          format: int64
+          nullable: true
+          description: ID of the related entity (e.g., productId for low stock notifications, orderId for order notifications)
+        relatedEntityType:
+          type: string
+          nullable: true
+          enum: [PRODUCT, ORDER, USER]
+          description: Type of the related entity
+        isRead:
+          type: boolean
+          description: Whether the notification has been read
+          default: false
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the notification was created
